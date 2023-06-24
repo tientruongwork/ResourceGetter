@@ -2,3 +2,5 @@ node_modules
 build
 storage
 dependencies/ffmpeg.exe
+
+yarn-error.log
