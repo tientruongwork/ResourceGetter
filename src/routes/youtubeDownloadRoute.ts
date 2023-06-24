@@ -4,8 +4,9 @@ import { YoutubeCommonHandler } from "@common/YoutubeCommonHandler";
 import {
   IYoutubeGetInfoRequestBody,
   IYoutubeDownloadRequestBody,
-  IYoutubeVideoInfoWithServiceId,
+  IYoutubeVideoInfo,
 } from "@interfaces/IYoutubeDownload";
+import { CommonHandler } from "@common/CommonHandler";
 
 const youtubeRoute = Router();
 
@@ -16,7 +17,9 @@ youtubeRoute.post(
     response: Response
   ): Promise<void> => {
     const { url } = request.body;
-    const youtubeDownloadController = new YoutubeDownloadController();
+    const serviceId = CommonHandler.generateServiceId();
+    const youtubeDownloadController = new YoutubeDownloadController(serviceId);
+
     try {
       const info = await youtubeDownloadController.getInfo(url);
       response.status(200).send(info);
@@ -34,9 +37,16 @@ youtubeRoute.post(
   ) => {
     try {
       const { info, audioOnly } = request.body;
-      const youtubeDownloadController = new YoutubeDownloadController();
+      const parsedInfo: IYoutubeVideoInfo = JSON.parse(info);
 
-      const parsedInfo: IYoutubeVideoInfoWithServiceId = JSON.parse(info);
+      if (!parsedInfo._serviceId) {
+        response.status(400).send("Bad request");
+      }
+
+      const youtubeDownloadController = new YoutubeDownloadController(
+        parsedInfo._serviceId as string
+      );
+
       const videoTitle = YoutubeCommonHandler.extractVideoTitle(parsedInfo);
 
       let downloadPath;
@@ -55,7 +65,9 @@ youtubeRoute.post(
       }
 
       response.download(downloadPath, videoTitle, () =>
-        YoutubeCommonHandler.cleanupStorage(parsedInfo.serviceId)
+        YoutubeCommonHandler.cleanupStorage(
+          youtubeDownloadController.getServiceId()
+        )
       );
     } catch (error) {
       console.log(error);
