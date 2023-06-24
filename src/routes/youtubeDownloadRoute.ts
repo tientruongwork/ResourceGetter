@@ -4,6 +4,7 @@ import { YoutubeCommonHandler } from "@youtube/common/YoutubeCommonHandler";
 import {
   IYoutubeGetInfoRequestBody,
   IYoutubeDownloadRequestBody,
+  VideoInfoWithServiceId,
 } from "@youtube/interfaces/IYoutubeDownload";
 
 const youtubeRoute = Router();
@@ -32,38 +33,29 @@ youtubeRoute.post(
     response: Response
   ) => {
     try {
-      const { info, audioOnly, quality } = request.body;
+      const { info, audioOnly } = request.body;
       const youtubeDownloadController = new YoutubeDownloadController();
 
-      const parsedInfo: any = JSON.parse(info);
-      const serviceId = parsedInfo.serviceId;
-      if (!serviceId) {
-        throw new Error("serviceId not found");
+      const parsedInfo: VideoInfoWithServiceId = JSON.parse(info);
+      const videoTitle = YoutubeCommonHandler.extractVideoTitle(parsedInfo);
+
+      let downloadPath;
+      if (audioOnly) {
+        downloadPath = await youtubeDownloadController.downloadAudio(
+          parsedInfo
+        );
+      } else {
+        downloadPath = await youtubeDownloadController.downloadVideo(
+          parsedInfo
+        );
       }
 
-      const origin_video_title = parsedInfo.player_response.videoDetails.title;
+      if (!downloadPath) {
+        response.sendStatus(400);
+      }
 
-      const video_title =
-        YoutubeCommonHandler.reformatVideoTitle(origin_video_title);
-
-      const downloadOptions = YoutubeCommonHandler.buildDownloadOptions(
-        audioOnly,
-        quality
-      );
-      downloadOptions;
-
-      YoutubeCommonHandler.createStorage(serviceId);
-      await youtubeDownloadController.downloadHighestVidAndAud(
-        parsedInfo,
-        serviceId
-      );
-
-      const downloadPath = await youtubeDownloadController.mergeHighestQuality(
-        serviceId,
-        video_title
-      );
-      response.download(downloadPath, video_title, () =>
-        YoutubeCommonHandler.cleanupStorage(serviceId)
+      response.download(downloadPath, videoTitle, () =>
+        YoutubeCommonHandler.cleanupStorage(parsedInfo.serviceId)
       );
     } catch (error) {
       console.log(error);
