@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "baseUrl": ".",
+    "rootDir": ".",
+    "outDir": "dist",
+    "allowJs": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmitOnError": true,
+    "strict": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@youtube/*": ["src/packages/youtube/*"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "webpack.config.js",
+    "webpack-utilities/NodemonWebpackPlugin.js"
+  ]
+}
