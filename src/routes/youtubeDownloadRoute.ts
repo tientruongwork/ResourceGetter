@@ -1,6 +1,4 @@
-import { Router, Request } from "express";
-import { videoInfo } from "ytdl-core";
-import ytdl from "ytdl-core";
+import { Router, Request, Response } from "express";
 import { YoutubeDownloadController } from "@youtube/controller/YoutubeDownloadController";
 import { YoutubeCommonHandler } from "@youtube/common/YoutubeCommonHandler";
 import {
@@ -13,25 +11,64 @@ const youtubeRoute = Router();
 youtubeRoute.post(
   "/get-youtube-info",
   async (
-    request: Request<{}, {}, IYoutubeGetInfoRequestBody>
-  ): Promise<videoInfo> => {
+    request: Request<{}, {}, IYoutubeGetInfoRequestBody>,
+    response: Response
+  ): Promise<void> => {
     const { url } = request.body;
     const youtubeDownloadController = new YoutubeDownloadController();
-    const info = await youtubeDownloadController.getInfo(url);
-    return info;
+    try {
+      const info = await youtubeDownloadController.getInfo(url);
+      response.status(200).send(info);
+    } catch (error) {
+      response.status(400).send(error);
+    }
   }
 );
 
 youtubeRoute.post(
   "/download-youtube-video",
-  async (request: Request<{}, {}, IYoutubeDownloadRequestBody>) => {
-    const { info, audioOnly, quality } = request.body;
-    const downloadOptions = YoutubeCommonHandler.buildDownloadOptions(
-      audioOnly,
-      quality
-    );
+  async (
+    request: Request<{}, {}, IYoutubeDownloadRequestBody>,
+    response: Response
+  ) => {
+    try {
+      const { info, audioOnly, quality } = request.body;
+      const youtubeDownloadController = new YoutubeDownloadController();
 
-    ytdl.downloadFromInfo(info, downloadOptions);
+      const parsedInfo: any = JSON.parse(info);
+      const serviceId = parsedInfo.serviceId;
+      if (!serviceId) {
+        throw new Error("serviceId not found");
+      }
+
+      const origin_video_title = parsedInfo.player_response.videoDetails.title;
+
+      const video_title =
+        YoutubeCommonHandler.reformatVideoTitle(origin_video_title);
+
+      const downloadOptions = YoutubeCommonHandler.buildDownloadOptions(
+        audioOnly,
+        quality
+      );
+      downloadOptions;
+
+      YoutubeCommonHandler.createStorage(serviceId);
+      await youtubeDownloadController.downloadHighestVidAndAud(
+        parsedInfo,
+        serviceId
+      );
+
+      const downloadPath = await youtubeDownloadController.mergeHighestQuality(
+        serviceId,
+        video_title
+      );
+      response.download(downloadPath, video_title, () =>
+        YoutubeCommonHandler.cleanupStorage(serviceId)
+      );
+    } catch (error) {
+      console.log(error);
+      response.sendStatus(400);
+    }
   }
 );
 
