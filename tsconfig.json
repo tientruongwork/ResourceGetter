@@ -27,7 +27,9 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "paths": {
-      "@youtube/*": ["src/packages/youtube/*"]
+      "@interfaces/*": ["src/interfaces/*"],
+      "@common/*": ["src/common/*"],
+      "@controller/*": ["src/controller/*"]
     }
   },
   "exclude": [

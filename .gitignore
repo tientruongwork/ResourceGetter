@@ -1,0 +1,4 @@
+node_modules
+build
+storage
+dependencies/ffmpeg.exe
