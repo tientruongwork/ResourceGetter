@@ -1,11 +1,12 @@
-import { ChooseFormatQuality, Filter, downloadOptions } from "ytdl-core";
 import path from "path";
 import fs from "fs";
 import { rimraf } from "rimraf";
+import { ChooseFormatQuality, Filter, downloadOptions } from "ytdl-core";
+
 import {
   IYoutubeDownloadQuality,
   VideoInfoWithServiceId,
-} from "@youtube/interfaces/IYoutubeDownload";
+} from "@interfaces/IYoutubeDownload";
 
 class YoutubeCommonHandler {
   public static buildDownloadOptions(

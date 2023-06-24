@@ -1,11 +1,11 @@
 import { Router, Request, Response } from "express";
-import { YoutubeDownloadController } from "@youtube/controller/YoutubeDownloadController";
-import { YoutubeCommonHandler } from "@youtube/common/YoutubeCommonHandler";
+import { YoutubeDownloadController } from "@controller/YoutubeDownloadController";
+import { YoutubeCommonHandler } from "@common/YoutubeCommonHandler";
 import {
   IYoutubeGetInfoRequestBody,
   IYoutubeDownloadRequestBody,
   VideoInfoWithServiceId,
-} from "@youtube/interfaces/IYoutubeDownload";
+} from "@interfaces/IYoutubeDownload";
 
 const youtubeRoute = Router();
 

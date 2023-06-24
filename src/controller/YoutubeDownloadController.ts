@@ -1,13 +1,14 @@
-import ytdl from "ytdl-core";
-import {
-  IYoutubeDownloadQuality,
-  VideoInfoWithServiceId,
-} from "@youtube/interfaces/IYoutubeDownload";
 import path from "path";
 import fs from "fs";
 import { exec } from "child_process";
 import { v4 } from "uuid";
-import { YoutubeCommonHandler } from "@youtube/common/YoutubeCommonHandler";
+import ytdl from "ytdl-core";
+
+import {
+  IYoutubeDownloadQuality,
+  VideoInfoWithServiceId,
+} from "@interfaces/IYoutubeDownload";
+import { YoutubeCommonHandler } from "@common/YoutubeCommonHandler";
 
 class YoutubeDownloadController {
   public async getInfo(url: string): Promise<VideoInfoWithServiceId> {
