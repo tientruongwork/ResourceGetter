@@ -15,6 +15,10 @@ export enum IYoutubeDownloadQuality {
   HIGHEST_VIDEO = "highestvideo",
 }
 
-export type VideoInfoWithServiceId = videoInfo & {
+export type VideoInfoWithServiceId = Pick<
+  videoInfo,
+  "formats" | "html5player" | "videoDetails" | "player_response"
+> & {
   serviceId: string;
+  full: boolean;
 };

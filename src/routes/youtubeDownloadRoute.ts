@@ -10,7 +10,7 @@ import {
 const youtubeRoute = Router();
 
 youtubeRoute.post(
-  "/get-youtube-info",
+  "/get-info",
   async (
     request: Request<{}, {}, IYoutubeGetInfoRequestBody>,
     response: Response
@@ -27,7 +27,7 @@ youtubeRoute.post(
 );
 
 youtubeRoute.post(
-  "/download-youtube-video",
+  "/download",
   async (
     request: Request<{}, {}, IYoutubeDownloadRequestBody>,
     response: Response

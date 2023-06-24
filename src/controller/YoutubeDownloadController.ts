@@ -3,6 +3,7 @@ import fs from "fs";
 import { exec } from "child_process";
 import { v4 } from "uuid";
 import ytdl from "ytdl-core";
+import pick from "lodash/pick";
 
 import {
   IYoutubeDownloadQuality,
@@ -13,8 +14,16 @@ import { YoutubeCommonHandler } from "@common/YoutubeCommonHandler";
 class YoutubeDownloadController {
   public async getInfo(url: string): Promise<VideoInfoWithServiceId> {
     const info = await ytdl.getInfo(url);
-    Object.assign(info, { serviceId: v4() });
-    return info as VideoInfoWithServiceId;
+    const parsedInfo = pick(info, [
+      "formats",
+      "full",
+      " html5player",
+      "videoDetails",
+      "player_response",
+    ]);
+    Object.assign(parsedInfo, { serviceId: v4() });
+
+    return parsedInfo as VideoInfoWithServiceId;
   }
 
   private async executeDownloadJob(
@@ -28,7 +37,7 @@ class YoutubeDownloadController {
 
     return new Promise((resolve) => {
       const vidStream = ytdl
-        .downloadFromInfo(info, { quality })
+        .downloadFromInfo(info as any, { quality })
         .pipe(fs.createWriteStream(storagePath));
 
       vidStream.on("finish", () => {

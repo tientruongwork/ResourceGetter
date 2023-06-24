@@ -10,7 +10,7 @@ app.use(cors());
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
-app.use(youtubeRoute);
+app.use("/youtube", youtubeRoute);
 
 app.listen(PORT, () => {
   console.log(`Application is running on port:${PORT}`);
