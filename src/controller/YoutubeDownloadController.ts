@@ -17,7 +17,7 @@ class YoutubeDownloadController {
     const parsedInfo = pick(info, [
       "formats",
       "full",
-      " html5player",
+      "html5player",
       "videoDetails",
       "player_response",
     ]);
