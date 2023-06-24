@@ -7,19 +7,39 @@ import {
   IYoutubeDownloadQuality,
   IYoutubeVideoInfo,
 } from "@interfaces/IYoutubeDownload";
-import { YoutubeCommonHandler } from "@common/YoutubeCommonHandler";
-import { CommonHandler } from "@common/CommonHandler";
+import { BaseController } from "@controller/BaseController";
+import { Common } from "@common/Common";
 
-class YoutubeDownloadController {
-  private _serviceId!: string;
+class YoutubeDownloadController extends BaseController {
+  public extractVideoTitle(info: IYoutubeVideoInfo): string {
+    const origin_video_title = info.player_response.videoDetails.title;
 
-  constructor(serviceId: string) {
-    this._serviceId = serviceId;
+    const videoTitle = origin_video_title
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .split(" ")
+      .join("-");
+
+    return videoTitle;
   }
 
-  public getServiceId(): string {
-    return this._serviceId;
+  private getDownloadPrefix(quality: IYoutubeDownloadQuality): string {
+    switch (quality) {
+      case IYoutubeDownloadQuality.HIGHEST_VIDEO:
+        return "_vid";
+      case IYoutubeDownloadQuality.HIGHEST_AUDIO:
+        return "_aud";
+      default:
+        return "";
+    }
   }
+
+  public buildStoragePath = (
+    quality: IYoutubeDownloadQuality,
+    serviceId: string
+  ): string => {
+    const prefix = this.getDownloadPrefix(quality);
+    return `storage/${serviceId}/${serviceId}${prefix}.mp4`;
+  };
 
   public async getInfo(url: string): Promise<IYoutubeVideoInfo> {
     const info = await ytdl.getInfo(url);
@@ -31,7 +51,7 @@ class YoutubeDownloadController {
       "player_response",
     ]);
 
-    Object.assign(parsedInfo, { _serviceId: this._serviceId });
+    Object.assign(parsedInfo, { _serviceId: this.getServiceId() });
     return parsedInfo as IYoutubeVideoInfo;
   }
 
@@ -39,11 +59,8 @@ class YoutubeDownloadController {
     info: IYoutubeVideoInfo,
     quality: IYoutubeDownloadQuality
   ): Promise<any> {
-    const storagePath = YoutubeCommonHandler.buildStoragePath(
-      quality,
-      this._serviceId
-    );
-    console.log(quality);
+    const storagePath = this.buildStoragePath(quality, this.getServiceId());
+
     return new Promise((resolve) => {
       const vidStream = ytdl
         .downloadFromInfo(info as any, { quality })
@@ -56,10 +73,12 @@ class YoutubeDownloadController {
   }
 
   private async mergeHighestQuality(): Promise<string> {
-    const ffmpegPath = CommonHandler.getFfmpegPath();
-    const videoPath = `./storage/${this._serviceId}/${this._serviceId}_vid.mp4`;
-    const audioPath = `./storage/${this._serviceId}/${this._serviceId}_aud.mp4`;
-    const mergedPath = `./storage/${this._serviceId}/${this._serviceId}_mixed.mp4`;
+    const ffmpegPath = Common.getFfmpegPath();
+    const serviceId = this.getServiceId();
+
+    const videoPath = `${this.getStoragePath()}/${serviceId}_vid.mp4`;
+    const audioPath = `${this.getStoragePath()}/${serviceId}_aud.mp4`;
+    const mergedPath = `${this.getStoragePath()}/${serviceId}_mixed.mp4`;
 
     await new Promise((resolve) => {
       exec(
@@ -78,13 +97,16 @@ class YoutubeDownloadController {
     return mergedPath;
   }
 
-  private preDownload(info: IYoutubeVideoInfo): void {
-    if (!this._serviceId) {
-      if (info._serviceId) this._serviceId = info._serviceId;
-      else throw new Error("serviceId not found");
+  protected preDownload(info: IYoutubeVideoInfo): void {
+    if (!this.isServiceIdValid()) {
+      if (info._serviceId) {
+        this.setServiceId(info._serviceId);
+      } else {
+        throw new Error("serviceId not found");
+      }
     }
 
-    YoutubeCommonHandler.createStorage(this._serviceId);
+    this.createStorage();
   }
 
   public async downloadVideo(info: IYoutubeVideoInfo): Promise<string> {
@@ -102,9 +124,9 @@ class YoutubeDownloadController {
   public async downloadAudio(info: IYoutubeVideoInfo) {
     this.preDownload(info);
 
-    const downloadPath = YoutubeCommonHandler.buildStoragePath(
+    const downloadPath = this.buildStoragePath(
       IYoutubeDownloadQuality.HIGHEST_AUDIO,
-      this._serviceId
+      this.getServiceId()
     );
 
     await this.executeDownloadJob(info, IYoutubeDownloadQuality.HIGHEST_AUDIO);

@@ -1,12 +1,12 @@
 import { Router, Request, Response } from "express";
 import { YoutubeDownloadController } from "@controller/YoutubeDownloadController";
-import { YoutubeCommonHandler } from "@common/YoutubeCommonHandler";
+
 import {
   IYoutubeGetInfoRequestBody,
   IYoutubeDownloadRequestBody,
   IYoutubeVideoInfo,
 } from "@interfaces/IYoutubeDownload";
-import { CommonHandler } from "@common/CommonHandler";
+import { Common } from "@common/Common";
 
 const youtubeRoute = Router();
 
@@ -17,7 +17,7 @@ youtubeRoute.post(
     response: Response
   ): Promise<void> => {
     const { url } = request.body;
-    const serviceId = CommonHandler.generateServiceId();
+    const serviceId = Common.generateServiceId();
     const youtubeDownloadController = new YoutubeDownloadController(serviceId);
 
     try {
@@ -47,7 +47,8 @@ youtubeRoute.post(
         parsedInfo._serviceId as string
       );
 
-      const videoTitle = YoutubeCommonHandler.extractVideoTitle(parsedInfo);
+      const videoTitle =
+        youtubeDownloadController.extractVideoTitle(parsedInfo);
 
       let downloadPath;
       if (audioOnly) {
@@ -65,9 +66,7 @@ youtubeRoute.post(
       }
 
       response.download(downloadPath, videoTitle, () =>
-        YoutubeCommonHandler.cleanupStorage(
-          youtubeDownloadController.getServiceId()
-        )
+        youtubeDownloadController.cleanupStorage()
       );
     } catch (error) {
       console.log(error);
