@@ -1,7 +1,6 @@
 import path from "path";
 import fs from "fs";
 import { exec } from "child_process";
-import { v4 } from "uuid";
 import ytdl from "ytdl-core";
 import pick from "lodash/pick";
 
@@ -10,6 +9,7 @@ import {
   VideoInfoWithServiceId,
 } from "@interfaces/IYoutubeDownload";
 import { YoutubeCommonHandler } from "@common/YoutubeCommonHandler";
+import { CommonHandler } from "@common/CommonHandler";
 
 class YoutubeDownloadController {
   public async getInfo(url: string): Promise<VideoInfoWithServiceId> {
@@ -21,7 +21,8 @@ class YoutubeDownloadController {
       "videoDetails",
       "player_response",
     ]);
-    Object.assign(parsedInfo, { serviceId: v4() });
+    const serviceId = CommonHandler.generateServiceId();
+    Object.assign(parsedInfo, { serviceId });
 
     return parsedInfo as VideoInfoWithServiceId;
   }
@@ -29,7 +30,7 @@ class YoutubeDownloadController {
   private async executeDownloadJob(
     info: VideoInfoWithServiceId,
     quality: IYoutubeDownloadQuality
-  ) {
+  ): Promise<any> {
     const storagePath = YoutubeCommonHandler.buildStoragePath(
       quality,
       info.serviceId
@@ -69,7 +70,9 @@ class YoutubeDownloadController {
     return mergedPath;
   }
 
-  private preDownload(info: VideoInfoWithServiceId & { serviceId: string }) {
+  private preDownload(info: VideoInfoWithServiceId): {
+    serviceId: string;
+  } {
     const serviceId = info.serviceId;
     if (!serviceId) {
       throw new Error("serviceId not found");
@@ -79,7 +82,7 @@ class YoutubeDownloadController {
     return { serviceId };
   }
 
-  public async downloadVideo(info: VideoInfoWithServiceId) {
+  public async downloadVideo(info: VideoInfoWithServiceId): Promise<string> {
     const { serviceId } = this.preDownload(info);
 
     await Promise.allSettled([

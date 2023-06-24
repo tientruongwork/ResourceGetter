@@ -1,7 +1,6 @@
 import path from "path";
 import fs from "fs";
 import { rimraf } from "rimraf";
-import { ChooseFormatQuality, Filter, downloadOptions } from "ytdl-core";
 
 import {
   IYoutubeDownloadQuality,
@@ -9,27 +8,7 @@ import {
 } from "@interfaces/IYoutubeDownload";
 
 class YoutubeCommonHandler {
-  public static buildDownloadOptions(
-    audioOnly: boolean | undefined,
-    quality: ChooseFormatQuality | undefined
-  ): downloadOptions | { filter: Filter } | Filter {
-    if (audioOnly) {
-      return { quality: "highestaudio" };
-    }
-
-    // "quality" in filter function have different purpose and type with "quality" from audioOnly
-    if (quality) {
-      return {
-        filter: (format) => {
-          return format.quality === quality;
-        },
-      };
-    }
-
-    return {};
-  }
-
-  public static createStorage(serviceId: string) {
+  public static createStorage(serviceId: string): void {
     const storagePath = path.join(__dirname, "../storage", serviceId);
 
     if (!fs.existsSync(storagePath)) {
@@ -37,7 +16,7 @@ class YoutubeCommonHandler {
     }
   }
 
-  public static cleanupStorage(serviceId: string) {
+  public static cleanupStorage(serviceId: string): void {
     const storagePath = path.join(__dirname, "../storage", serviceId);
     rimraf(storagePath);
   }
@@ -45,12 +24,12 @@ class YoutubeCommonHandler {
   public static buildStoragePath = (
     quality: IYoutubeDownloadQuality,
     serviceId: string
-  ) => {
+  ): string => {
     const prefix = this.getDownloadPrefix(quality);
     return `storage/${serviceId}/${serviceId}${prefix}.mp4`;
   };
 
-  public static getDownloadPrefix(quality: IYoutubeDownloadQuality) {
+  public static getDownloadPrefix(quality: IYoutubeDownloadQuality): string {
     switch (quality) {
       case IYoutubeDownloadQuality.HIGHEST_VIDEO:
         return "_vid";
@@ -61,7 +40,7 @@ class YoutubeCommonHandler {
     }
   }
 
-  public static extractVideoTitle(info: VideoInfoWithServiceId) {
+  public static extractVideoTitle(info: VideoInfoWithServiceId): string {
     const origin_video_title = info.player_response.videoDetails.title;
 
     const videoTitle = origin_video_title
