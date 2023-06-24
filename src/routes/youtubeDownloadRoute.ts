@@ -4,7 +4,7 @@ import { YoutubeCommonHandler } from "@common/YoutubeCommonHandler";
 import {
   IYoutubeGetInfoRequestBody,
   IYoutubeDownloadRequestBody,
-  VideoInfoWithServiceId,
+  IYoutubeVideoInfoWithServiceId,
 } from "@interfaces/IYoutubeDownload";
 
 const youtubeRoute = Router();
@@ -36,7 +36,7 @@ youtubeRoute.post(
       const { info, audioOnly } = request.body;
       const youtubeDownloadController = new YoutubeDownloadController();
 
-      const parsedInfo: VideoInfoWithServiceId = JSON.parse(info);
+      const parsedInfo: IYoutubeVideoInfoWithServiceId = JSON.parse(info);
       const videoTitle = YoutubeCommonHandler.extractVideoTitle(parsedInfo);
 
       let downloadPath;

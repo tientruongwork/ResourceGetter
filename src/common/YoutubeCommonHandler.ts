@@ -4,7 +4,7 @@ import { rimraf } from "rimraf";
 
 import {
   IYoutubeDownloadQuality,
-  VideoInfoWithServiceId,
+  IYoutubeVideoInfoWithServiceId,
 } from "@interfaces/IYoutubeDownload";
 
 class YoutubeCommonHandler {
@@ -40,7 +40,7 @@ class YoutubeCommonHandler {
     }
   }
 
-  public static extractVideoTitle(info: VideoInfoWithServiceId): string {
+  public static extractVideoTitle(info: IYoutubeVideoInfoWithServiceId): string {
     const origin_video_title = info.player_response.videoDetails.title;
 
     const videoTitle = origin_video_title

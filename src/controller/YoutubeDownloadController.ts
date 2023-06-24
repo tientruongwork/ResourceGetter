@@ -6,13 +6,13 @@ import pick from "lodash/pick";
 
 import {
   IYoutubeDownloadQuality,
-  VideoInfoWithServiceId,
+  IYoutubeVideoInfoWithServiceId,
 } from "@interfaces/IYoutubeDownload";
 import { YoutubeCommonHandler } from "@common/YoutubeCommonHandler";
 import { CommonHandler } from "@common/CommonHandler";
 
 class YoutubeDownloadController {
-  public async getInfo(url: string): Promise<VideoInfoWithServiceId> {
+  public async getInfo(url: string): Promise<IYoutubeVideoInfoWithServiceId> {
     const info = await ytdl.getInfo(url);
     const parsedInfo = pick(info, [
       "formats",
@@ -24,11 +24,11 @@ class YoutubeDownloadController {
     const serviceId = CommonHandler.generateServiceId();
     Object.assign(parsedInfo, { serviceId });
 
-    return parsedInfo as VideoInfoWithServiceId;
+    return parsedInfo as IYoutubeVideoInfoWithServiceId;
   }
 
   private async executeDownloadJob(
-    info: VideoInfoWithServiceId,
+    info: IYoutubeVideoInfoWithServiceId,
     quality: IYoutubeDownloadQuality
   ): Promise<any> {
     const storagePath = YoutubeCommonHandler.buildStoragePath(
@@ -70,7 +70,7 @@ class YoutubeDownloadController {
     return mergedPath;
   }
 
-  private preDownload(info: VideoInfoWithServiceId): {
+  private preDownload(info: IYoutubeVideoInfoWithServiceId): {
     serviceId: string;
   } {
     const serviceId = info.serviceId;
@@ -82,7 +82,9 @@ class YoutubeDownloadController {
     return { serviceId };
   }
 
-  public async downloadVideo(info: VideoInfoWithServiceId): Promise<string> {
+  public async downloadVideo(
+    info: IYoutubeVideoInfoWithServiceId
+  ): Promise<string> {
     const { serviceId } = this.preDownload(info);
 
     await Promise.allSettled([
@@ -94,7 +96,7 @@ class YoutubeDownloadController {
     return downloadPath;
   }
 
-  public async downloadAudio(info: VideoInfoWithServiceId) {
+  public async downloadAudio(info: IYoutubeVideoInfoWithServiceId) {
     const { serviceId } = this.preDownload(info);
 
     const downloadPath = YoutubeCommonHandler.buildStoragePath(
